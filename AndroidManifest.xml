@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.porunga.phone2phone" android:versionCode="1"
+	android:versionName="1.0">
+	<uses-sdk android:minSdkVersion="8" />
+	<permission android:name="com.porunga.phone2phone.permission.C2D_MESSAGE"
+		android:protectionLevel="signature" />
+	<uses-permission android:name="com.porunga.phone2phone.permission.C2D_MESSAGE" />
+	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+	<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"></uses-permission>
+	<uses-permission android:name="android.permission.GET_ACCOUNTS" ></uses-permission>
+
+	<application android:icon="@drawable/icon" android:label="@string/app_name">
+		<activity android:name="com.porunga.phone2phone.MainActivity" android:label="@string/app_name">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+			<intent-filter>
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="text/plain" />
+				<action android:name="android.intent.action.SEND" />
+			</intent-filter>
+		</activity>
+
+		<!-- C2DMサーバへの登録結果の受信用 -->
+		<receiver android:name=".C2DMRegisterReceiver"
+			android:permission="com.google.android.c2dm.permission.SEND">
+			<intent-filter>
+				<action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+				<category android:name="jp.co.tis.tc.phone2phone" />
+			</intent-filter>
+		</receiver>
+
+		<!-- データメッセージの受信 -->
+		<receiver android:name="com.porunga.phone2phone.C2DMDataReceiver"
+			android:permission="com.google.android.c2dm.permission.SEND">
+			<intent-filter>
+				<action android:name="com.google.android.c2dm.intent.RECEIVE" />
+				<category android:name="jp.co.tis.tc.phone2phone" />
+			</intent-filter>
+		</receiver>
+	</application>
+</manifest>
