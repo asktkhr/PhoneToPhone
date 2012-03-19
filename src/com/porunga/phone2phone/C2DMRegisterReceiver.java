@@ -37,7 +37,7 @@ public class C2DMRegisterReceiver extends BroadcastReceiver {
 			// registration_idをアプリケーションサーバに送信する。
 			SharedPreferences pref = context.getSharedPreferences("pref", Activity.MODE_PRIVATE);
 			SharedPreferences.Editor editor = pref.edit();
-			editor.putString("regId", registrationId);
+			editor.putString("registration_id", registrationId);
 			// データの保存
 			editor.commit();
 			this.sendRegistrationId(context, registrationId);
@@ -48,16 +48,8 @@ public class C2DMRegisterReceiver extends BroadcastReceiver {
 	}
 
 	private void sendRegistrationId(Context context, String registrationId) {
-		Account[] accounts = AccountManager.get(context).getAccounts();
-		String email = "";
-		for(int i =0;i< accounts.length;i++){
-			if(accounts[i].type.equals("com.google")) {
-				email = accounts[i].name;
-				break;
-			}
-		}
-		email = email + "-" + Build.MODEL;
-		String api = "http://***/c2dm/save_device";
+		String name = Build.MODEL;
+		String api = "http://localhost/message/register";
 		// String api = "http://192.168.11.105:3000/c2dm/save_device";
 		HttpResponse objResponse = null;
 
@@ -67,7 +59,7 @@ public class C2DMRegisterReceiver extends BroadcastReceiver {
 		HttpEntity entity = null;
 		final List<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("registration_id", registrationId));
-		params.add(new BasicNameValuePair("email", email));
+		params.add(new BasicNameValuePair("name", name));
 		try {
 			entity = new UrlEncodedFormEntity(params, HTTP.UTF_8);
 		} catch (UnsupportedEncodingException e) {
@@ -80,7 +72,7 @@ public class C2DMRegisterReceiver extends BroadcastReceiver {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if(objResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
+			if(objResponse.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED){
 				Toast.makeText(context, "registered", Toast.LENGTH_LONG).show();
 			}else{
 				Toast.makeText(context, "failer", Toast.LENGTH_LONG).show();

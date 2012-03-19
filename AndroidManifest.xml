@@ -28,7 +28,7 @@
 			android:permission="com.google.android.c2dm.permission.SEND">
 			<intent-filter>
 				<action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-				<category android:name="jp.co.tis.tc.phone2phone" />
+				<category android:name="com.porunga.phone2phone" />
 			</intent-filter>
 		</receiver>
 
@@ -37,7 +37,7 @@
 			android:permission="com.google.android.c2dm.permission.SEND">
 			<intent-filter>
 				<action android:name="com.google.android.c2dm.intent.RECEIVE" />
-				<category android:name="jp.co.tis.tc.phone2phone" />
+				<category android:name="com.porunga.phone2phone" />
 			</intent-filter>
 		</receiver>
 	</application>

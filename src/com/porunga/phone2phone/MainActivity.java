@@ -5,8 +5,6 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.porunga.phone2phone.R;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -19,8 +17,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -43,7 +39,7 @@ public class MainActivity extends Activity {
 		} else {
 			setContentView(R.layout.main);
 			SharedPreferences pref = this.getSharedPreferences("pref", Activity.MODE_PRIVATE);
-			String regId = pref.getString("regId", "");
+			String regId = pref.getString("registration_id", "");
 
 			if (regId != "") {
 				Button registerButton = (Button) findViewById(R.id.registerButton);
@@ -57,14 +53,42 @@ public class MainActivity extends Activity {
 		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 		dialog.setTitle("User");
 		final String[] items = new String[list.size()];
+		final boolean[] flags = new boolean[list.size()];
 		for (int i = 0; i < list.size(); i++) {
 			items[i] = list.get(i);
 		}
-		dialog.setItems(items, new DialogInterface.OnClickListener() {
+		dialog.setMultiChoiceItems(items, flags, new DialogInterface.OnMultiChoiceClickListener() {
 
 			@Override
+			public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+				// TODO Auto-generated method stub
+				flags[which] = isChecked;
+			}
+		});
+		dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			
+			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				pushMessage(items[which]);
+				String receivers = "";
+				for(int i = 0; i < items.length; i++){
+					if(flags[i]){
+						receivers += items[i];
+						receivers += ",";
+					}
+				}
+				receivers.substring(0,receivers.length()-1);
+				
+				pushMessage(receivers);
+				
+			}
+		});
+		dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				finish();
+				
 			}
 		});
 		dialog.show();
@@ -73,20 +97,14 @@ public class MainActivity extends Activity {
 
 	private ArrayList<String> getRegistUser() {
 		ArrayList<String> list = new ArrayList<String>();
-		Account[] accounts = AccountManager.get(this).getAccounts();
-		String email = "";
-		for(int i =0;i< accounts.length;i++){
-			if(accounts[i].type.equals("com.google")) {
-				email = accounts[i].name;
-				break;
-			}
-		}
-		String api = "http://***/c2dm/devices?format=json";
+		String name = Build.MODEL;
+		
+		String api = "http://localhost/message/receivers?format=json";
 		HttpResponse objResponse = null;
 
 		HttpClient objHttp = new DefaultHttpClient();
 		api += "&";
-		api += "sender_device=" + email+"-"+Build.MODEL;
+		api += "name=" + name;
 		HttpGet objGet = new HttpGet(api);
 
 		try {
@@ -99,7 +117,7 @@ public class MainActivity extends Activity {
 			String result;
 			try {
 				result = EntityUtils.toString(objResponse.getEntity(), "UTF-8");
-				list = RegistUser.parse(result);
+				list = RegisterUser.parse(result);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -107,10 +125,10 @@ public class MainActivity extends Activity {
 		return list;
 	}
 
-	private void pushMessage(String email) {
+	private void pushMessage(String receivers) {
 
 		String uri = getIntent().getExtras().getCharSequence(Intent.EXTRA_TEXT).toString();
-		String api = "http://***/c2dm/send_message";
+		String api = "http://localhost/message/send_message";
 		HttpResponse objResponse = null;
 
 		HttpClient objHttp = new DefaultHttpClient();
@@ -118,8 +136,8 @@ public class MainActivity extends Activity {
 
 		HttpEntity entity = null;
 		final List<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("uri", uri));
-		params.add(new BasicNameValuePair("email", email));
+		params.add(new BasicNameValuePair("url", uri));
+		params.add(new BasicNameValuePair("receivers", receivers));
 		try {
 			entity = new UrlEncodedFormEntity(params, HTTP.UTF_8);
 		} catch (UnsupportedEncodingException e) {
@@ -139,14 +157,14 @@ public class MainActivity extends Activity {
 	public void registerDevice(View v) {
 		Intent intent = new Intent("com.google.android.c2dm.intent.REGISTER");
 		intent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
-		intent.putExtra("sender", "***@gmail.com");
+		intent.putExtra("sender", "mail@gmail.com");
 		startService(intent);
 	}
 
 	public void unregisterDevice(View v) {
 		Intent intent = new Intent("com.google.android.c2dm.intent.UNREGISTER");
 		intent.putExtra(getApplicationInfo().packageName, PendingIntent.getBroadcast(this, 0, new Intent(), 0));
-		intent.putExtra("sender", "***@gmail.com");
+		intent.putExtra("sender", "mail@gmail.com");
 		startService(intent);
 	}
 }
